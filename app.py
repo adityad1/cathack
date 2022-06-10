@@ -37,7 +37,7 @@ if img_file_buffer:
         col1.image(left_eye, width = 300)
         col2.header('Right Eye')
         col2.image(right_eye, width = 300)
-        from keras.models import model_from_json
+        from tensorflow.keras.models import model_from_json
         with open('model.json', 'r') as f:
             js = f.read()
         model = model_from_json(js)
