@@ -1,2 +1,4 @@
 streamlit-cropper
 Pillow
+dlib-bin
+opencv-python-headless
