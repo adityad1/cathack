@@ -1,4 +1,4 @@
 dlib-bin
 opencv-python-headless
-tensorflow==2.8.0
+tensorflow
 protobuf==3.15.0
