@@ -5,9 +5,9 @@ def initial():
     import cv2
     import dlib
     import numpy as np
-    import pickle
-    return cv2, dlib, np, pickle
-cv2, dlib, np, pickle = initial()
+    import joblib
+    return cv2, dlib, np, joblib
+cv2, dlib, np, joblib = initial()
 st.subheader('Welcome to Ikshana')
 st.image('I5.png')
 ###
@@ -58,8 +58,9 @@ if img_file_buffer:
             js = f.read()
         model = model_from_json(js)
         model.load_weights('vgg_weights.h5')
-        with open('xgb.pkl', 'rb') as f:
-            xg = pickle.load(f)
+        xg = joblib.load('xgb.joblib')
+#         with open('xgb.pkl', 'rb') as f:
+#             xg = pickle.load(f)
 #         preds = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
         preds = xg.predict(model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))])))
         label = ['No Cataract Detected.', 'Mild Cataract Detected.', 'Severe Cataract Detected.\nReach out to an eye doctor soon.']

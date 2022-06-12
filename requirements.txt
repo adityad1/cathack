@@ -3,5 +3,5 @@ dlib-bin
 opencv-python-headless
 keras
 tensorflow
-pickle==4.0
 xgboost
+joblib
