@@ -3,3 +3,4 @@ dlib-bin
 opencv-python-headless
 keras
 tensorflow
+pickle
