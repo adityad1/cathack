@@ -55,16 +55,20 @@ if img_file_buffer:
         col2.header('Right Eye')
         col2.image(right_eye, width = 200)
         from tensorflow.keras.models import model_from_json
-        with open('vgg.json', 'r') as f:
+        with open('model.json', 'r') as f:
             js = f.read()
         model = model_from_json(js)
-        model.load_weights('vgg_weights.h5')
-        xg = joblib.load('xgb.joblib')
+        model.load_weights('weights.h5')
+#         with open('vgg.json', 'r') as f:
+#             js = f.read()
+#         model = model_from_json(js)
+#         model.load_weights('vgg_weights.h5')
+#         xg = joblib.load('xgb.joblib')
 #         with open('xgb.pkl', 'rb') as f:
 #             xg = pickle.load(f)
-#         preds = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
-        pr = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
-        preds = xg.predict(pr)
+        preds = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
+#         pr = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
+#         preds = xg.predict(pr)
         label = ['No Cataract Detected.', 'Mild Cataract Detected.', 'Severe Cataract Detected.\nReach out to an eye doctor soon.']
         col1.info(label[np.argmax(preds[0])])
         col2.info(label[np.argmax(preds[1])])
