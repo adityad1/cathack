@@ -1,3 +1,5 @@
+streamlit
 dlib-bin
 opencv-python-headless
+keras
 tensorflow
