@@ -6,8 +6,9 @@ def initial():
     import dlib
     import numpy as np
     import joblib
-    return cv2, dlib, np, joblib
-cv2, dlib, np, joblib = initial()
+    import xgboost
+    return cv2, dlib, np, joblib, xgboost
+cv2, dlib, np, joblib, xgboost = initial()
 st.subheader('Welcome to Ikshana')
 st.image('I5.png')
 ###
@@ -62,7 +63,8 @@ if img_file_buffer:
 #         with open('xgb.pkl', 'rb') as f:
 #             xg = pickle.load(f)
 #         preds = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
-        preds = xg.predict(model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))])))
+        pr = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
+        preds = xg.predict(pr)
         label = ['No Cataract Detected.', 'Mild Cataract Detected.', 'Severe Cataract Detected.\nReach out to an eye doctor soon.']
         col1.info(label[np.argmax(preds[0])])
         col2.info(label[np.argmax(preds[1])])
