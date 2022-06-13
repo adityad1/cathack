@@ -1,22 +1,29 @@
+# Loading necessary packages and models
 import streamlit as st
-
 @st.experimental_singleton
 def initial():
     import cv2
-    import dlib
+    from dlib import get_frontal_face_detector, shape_predictor
+    fd = get_frontal_face_detector()
+    sp = shape_predictor('utils/shape_predictor_68_face_landmarks.dat')
     import numpy as np
     from xgboost import Booster, DMatrix
-    return cv2, dlib, np, Booster, DMatrix
-cv2, dlib, np, booster, dmat = initial()
+    from tensorflow.keras.models import model_from_json
+    with open('utils/vgg.json', 'r') as f:
+        model = model_from_json(f.read())
+    model.load_weights('utils/vgg_weights.h5')
+    xg = Booster()
+    xg.load_model('utils/xgb.json')
+    return cv2, fd, sp, np, DMatrix, model, xg
+cv2, fd, sp, np, dmat, model, xg = initial()
+
+# WebApp
 st.subheader('Welcome to Ikshana')
-st.image('I5.png')
-###
-with st.expander('Additional Information'):
-#     st.text('Instructions for usage')
+st.image('utils/logo.png')
+with st.expander('Additional Information 📝'):
     st.text('1.Please take an image that covers your entire face')
     st.text('2.Take the picture in good lighting setup')
     st.text('3.Avoid using flash while taking the picture')
-###
 st.selectbox(label = 'Photo Options', options = ['Camera', 'Upload'], key = 'upload')
 if st.session_state['upload'] == 'Upload':
     img_file_buffer = st.file_uploader('Upload a picture')
@@ -24,19 +31,13 @@ else:
     img_file_buffer = st.camera_input('Take a picture')
 labels = ['normal', 'mild', 'severe']
 if img_file_buffer:
-    bytes_data = img_file_buffer.getvalue()
-    img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-#     'Photo taken'
-    @st.experimental_singleton
-    def dlib_objs():
-        fd = dlib.get_frontal_face_detector()
-        sp = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
-        return fd, sp
-    fd, sp = dlib_objs()
+    if st.session_state['upload'] == 'Upload':
+        st.image(img_file_buffer)
+    img = cv2.imdecode(np.frombuffer(img_file_buffer.getvalue(), np.uint8), cv2.IMREAD_COLOR)
     gray, img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     faces = fd(img)
     if faces:
-        st.success('Face Detected.')
+        st.success('Face Detected 😄')
         points = sp(gray, faces[0])
         cx, cy = [i.x for i in points.parts()[36:42]], [i.y for i in points.parts()[36:42]]
         x, y, radius = np.mean(cx, dtype = int), np.mean(cy, dtype = int), (max(cx) - min(cx)) // 2
@@ -53,27 +54,11 @@ if img_file_buffer:
         col1.image(left_eye, width = 200)
         col2.header('Right Eye')
         col2.image(right_eye, width = 200)
-        from tensorflow.keras.models import model_from_json
-        with open('model.json', 'r') as f:
-            js = f.read()
-        model = model_from_json(js)
-        model.load_weights('weights.h5')
-        with open('vgg.json', 'r') as f:
-            model = model_from_json(f.read())
-#         model = model_from_json(js)
-        model.load_weights('vgg_weights.h5')
-#         xg = joblib.load('xgb.joblib')
-#         with open('xgb.pkl', 'rb') as f:
-#             xg = pickle.load(f)
-#         preds = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
-        xg = booster()
-        xg.load_model('m.json')
         pr = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
         preds = xg.predict(dmat(pr))
-        label = ['No Cataract Detected.', 'Mild Cataract Detected.', 'Severe Cataract Detected.\nReach out to an eye doctor soon.']
+        label = ['No Cataract Detected ☮', 'Mild Cataract Detected ⚠', 'Severe Cataract Detected 💀']
         col1.info(label[np.argmax(preds[0])])
         col2.info(label[np.argmax(preds[1])])
-        st.warning('Ensure Quality for Accurate Results.')
+        st.warning('Ensure Quality for Accurate Results')
     else:
-        st.error('Face Detection Failed. Please Try Again!!!')
-    
+        st.error('Face Detection Failed 😶 Please Try Again!!!')
