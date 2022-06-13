@@ -5,10 +5,9 @@ def initial():
     import cv2
     import dlib
     import numpy as np
-    import joblib
-    import xgboost
-    return cv2, dlib, np, joblib, xgboost
-cv2, dlib, np, joblib, xgboost = initial()
+    from xgboost import Booster, DMatrix
+    return cv2, dlib, np, Booster, DMatrix
+cv2, dlib, np, booster, dmat = initial()
 st.subheader('Welcome to Ikshana')
 st.image('I5.png')
 ###
@@ -59,16 +58,18 @@ if img_file_buffer:
             js = f.read()
         model = model_from_json(js)
         model.load_weights('weights.h5')
-#         with open('vgg.json', 'r') as f:
-#             js = f.read()
+        with open('vgg.json', 'r') as f:
+            model = model_from_json(f.read())
 #         model = model_from_json(js)
-#         model.load_weights('vgg_weights.h5')
+        model.load_weights('vgg_weights.h5')
 #         xg = joblib.load('xgb.joblib')
 #         with open('xgb.pkl', 'rb') as f:
 #             xg = pickle.load(f)
-        preds = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
-#         pr = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
-#         preds = xg.predict(pr)
+#         preds = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
+        xg = booster()
+        xg.load_model('m.json')
+        pr = model.predict(np.array([cv2.resize(left_eye, (224, 224)), cv2.resize(right_eye, (224, 224))]))
+        preds = xg.predict(dmat(pr))
         label = ['No Cataract Detected.', 'Mild Cataract Detected.', 'Severe Cataract Detected.\nReach out to an eye doctor soon.']
         col1.info(label[np.argmax(preds[0])])
         col2.info(label[np.argmax(preds[1])])

@@ -4,4 +4,3 @@ opencv-python-headless
 keras
 tensorflow
 xgboost==1.6.1
-joblib==1.1.0
